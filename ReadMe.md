@@ -1,5 +1,17 @@
 ##########
 
+User GUIDE branch :
+
+  depuis la branch à copier :
+    git checkout -b "Votre Branch"
+   
+   pour push sur la nouvelle branch:
+     git push --set-upstream origin "Votre Branch" (origin = remote)
+
+##########
+
+##########
+
 User GUIDE commit :
 
 git status (voir l'état des fichiers)
