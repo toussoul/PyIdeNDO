@@ -22,10 +22,11 @@ class IDE:
 		self.window.configure(background='black')
 		self.display()
 
-	def initIndexBar(self,lineNumber):
+	def initIndexBar(self,startLineNumber):
+		maxRangeIndex = 42
 		indexStr = ""
-		for i in range(1,lineNumber):
-			if i == lineNumber - 1:
+		for i in range(startLineNumber,maxRangeIndex + startLineNumber):
+			if i == (maxRangeIndex + startLineNumber - 1):
 				indexStr = indexStr + str(i)
 			else:
 				indexStr = indexStr + str(i) + "\n"
@@ -39,8 +40,8 @@ class IDE:
 		# self.screenWidth = self.window.winfo_width()
 		# self.screenHeight = self.window.winfo_height()
 
-		maxRangeIndex = 43
-		self.initIndexBar(maxRangeIndex)
+		startLine = 1
+		self.initIndexBar(startLine)
 		self.AreaCode = Text(self.window,height=42,width=200)
 		self.AreaCode.place(x=40,y=0)
 
@@ -73,8 +74,8 @@ class IDE:
 	def OpenFile(self):
 		self.pathFile = self.fileName = self.browseFiles()
 		f = open(self.fileName, "r")
-		self.num_lines = sum(1 for line in open(self.pathFile))
-		self.initIndexBar(self.num_lines)
+		# self.num_lines = sum(1 for line in open(self.pathFile))
+		# self.initIndexBar(self.num_lines)
 		self.stringValue = f.read()
 		self.stringValue = str(self.stringValue)
 		self.AreaCode.delete('1.0', 'end')
