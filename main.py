@@ -12,14 +12,15 @@ class IDE:
 		self.screenHeight = 0
 		self.screenWidth = 0
 
-		self.UserName = self.currentUser()
+		self.UserName = self.getCurrentUser()
 		# userPath = "C:/Users/" + UserName
 		self.userPath = "C:/Progra/Python/PyIDE"
 
 		self.window = Tk()
 		self.window.state('zoomed')
 		self.window.title("IDE Python")
-		self.window.configure(background='black')
+		self.window.iconbitmap('logo-notre-dame-les-oiseaux.ico')
+		self.window.configure(background = 'black')
 		self.display()
 
 	def initIndexBar(self,startLineNumber):
@@ -31,10 +32,10 @@ class IDE:
 			else:
 				indexStr = indexStr + str(i) + "\n"
 		
-		self.indexbar = Text(self.window, font=("Lucida Console", 12),height=42,width=3)
+		self.indexbar = Text(self.window, font = ("Lucida Console", 12), height = 42, width = 3)
 		self.indexbar.insert(INSERT, indexStr)
-		self.indexbar.configure(state='disabled')
-		self.indexbar.place(x=0,y=0)
+		self.indexbar.configure(state = 'disabled')
+		self.indexbar.place(x = 0, y = 0)
 
 	def WriteArea(self):
 		# self.screenWidth = self.window.winfo_width()
@@ -42,28 +43,66 @@ class IDE:
 
 		startLine = 1
 		self.initIndexBar(startLine)
-		self.AreaCode = Text(self.window,height=42,width=200)
-		self.AreaCode.place(x=40,y=0)
+		self.AreaCode = Text(self.window, height = 42, width = 200, undo = True)
+		self.AreaCode.place(x = 40,y = 0)
 
 
 	def TerminalArea(self):
-		self.terminal = Text(self.window,height=15,width=203,background='grey')
+		self.terminal = Text(self.window, height = 15, width = 203, background = 'grey')
 		self.terminal.insert(INSERT, "")
-		self.terminal.configure(state='disabled')
-		self.terminal.place(x=0,y=680)
+		self.terminal.configure(state = 'disabled')
+		self.terminal.place(x = 0,y = 680)
 
 	def MainMenu(self):
 		self.menuBar = Menu(self.window)
-		self.window.config(menu=self.menuBar)
-		self.menufichier = Menu(self.menuBar,tearoff=0)
-		self.menuBar.add_cascade(label="Fichier", menu=self.menufichier)
-		self.menuBar.add_command(label="Executer",command=self.RunCode)
-		self.menufichier.add_command(label="Ouvrir", command=self.OpenFile)
-		self.menufichier.add_command(label="Enregistrer", command=self.SaveFile)
-		self.menufichier.add_command(label="Enregistrer sous", command=self.SaveFile)
-		self.menufichier.add_command(label="Quitter",command=self.window.quit) 
+		self.window.config(menu = self.menuBar)
+		self.menufichier = Menu(self.menuBar, tearoff = 0)
+		self.menuEdit = Menu(self.menuBar, tearoff = 0)
+		
+		self.menuBar.add_cascade(label = "Fichier", menu = self.menufichier)
+		self.menuBar.add_cascade(label = "Editer", menu = self.menuEdit)
 
-	def currentUser(self):
+		self.menuBar.add_command(label = "Executer", command = self.RunCode)
+
+
+		self.menuEdit.add_command(label = "Copier", command = self.editCopy, accelerator = "(ctrl + c)")
+		self.menuEdit.add_command(label = "Coller", command = self.editPaste, accelerator = "(ctrl + v)")
+		self.menuEdit.add_command(label = "Couper", command = self.editCut, accelerator = "(ctrl + x)")
+		self.menuEdit.add_separator()
+		self.menuEdit.add_command(label = "Undo", command = self.AreaCode.edit_undo, accelerator = "(ctrl + z)")
+		self.menuEdit.add_command(label = "Redo", command = self.AreaCode.edit_redo, accelerator = "(ctrl + y)")
+
+		self.menufichier.add_command(label = "Ouvrir", command = self.OpenFile)
+		self.menufichier.add_command(label = "Enregistrer", command = self.SaveFile)
+		self.menufichier.add_command(label = "Enregistrer sous", command = self.SaveFileAs)
+		self.menufichier.add_separator()
+		self.menufichier.add_command(label = "Quitter", command = self.window.quit)
+
+
+	def editCopy(self):
+		if self.AreaCode.selection_get():
+			self.selected = self.AreaCode.selection_get()
+			self.window.clipboard_clear()
+			self.window.clipboard_append(self.selected)
+			self.window.update()
+
+	def editPaste(self):
+		if self.window.clipboard_get():
+			Paste = self.window.clipboard_get()
+			# print(Paste)
+			index = self.AreaCode.index(INSERT)
+			self.AreaCode.insert(index, Paste)
+
+
+	def editCut(self):
+		if self.AreaCode.selection_get():
+			self.selected = self.AreaCode.selection_get()
+			self.AreaCode.delete("sel.first", "sel.last")
+			self.window.clipboard_clear()
+			self.window.clipboard_append(self.selected)
+			self.window.update()
+
+	def getCurrentUser(self):
 		return os.getlogin()
 
 	def browseFiles(self):
@@ -85,7 +124,6 @@ class IDE:
 
 	def RunCode(self):
 		if self.pathFile == "":
-			# not save
 			self.SaveFile()
 			if self.pathFile != "":
 				self.Terminal('py ' + self.pathFile)
@@ -99,7 +137,7 @@ class IDE:
 		stringFile = self.AreaCode.get("1.0",'end')
 		if self.pathFile == "":
 			try:
-				f = filedialog.asksaveasfile(mode='w', defaultextension=".py", initialdir = self.userPath)
+				f = filedialog.asksaveasfile(mode = 'w', defaultextension = ".py", initialdir = self.userPath)
 				self.pathFile = f.name
 				f.write(stringFile)
 				f.close()
@@ -110,6 +148,17 @@ class IDE:
 			f = open(self.fileName, "w")
 			f.write(stringFile)
 			print('save')
+
+	def SaveFileAs(self):
+		stringFile = self.AreaCode.get("1.0",'end')
+		try:
+			f = filedialog.asksaveasfile(mode = 'w', defaultextension = ".py", initialdir = self.userPath)
+			self.pathFile = f.name
+			f.write(stringFile)
+			f.close()
+			print('save')
+		except:
+			print("File not opened")
 
 	def getClass(self):
 		return self.window
@@ -128,10 +177,9 @@ class IDE:
 		for i in range(0,len(self.args)):
 			command = command + self.args[i] + " "
 
-		# outPut = self.output
-		self.terminal.configure(state='normal')
+		self.terminal.configure(state = 'normal')
 		self.terminal.insert(INSERT,'\n' + self.userPath + '>' + command + '\n' + self.output.strip() + self.outError.strip() + '\n')
-		self.terminal.configure(state='disabled')
+		self.terminal.configure(state = 'disabled')
 		
 	def replaceOutTerm(self,string):
 		str = string.replace("b''", "")
@@ -144,9 +192,12 @@ class IDE:
 	def Terminal(self,command):
 		command_summary = command.split(' ')
 		os.environ["PYTHONUNBUFFERED"] = "1"
-		result = subprocess.run(command_summary, shell = True, env = os.environ, capture_output=True)
+		result = subprocess.run(command_summary, shell = True, env = os.environ, capture_output = True)
 		self.args = result.args
 		self.outError = result.stderr
 		self.output = result.stdout
+
+	def displayString(self):
+		print(self.stringValue)
 
 H1 = IDE()
